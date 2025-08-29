@@ -127,10 +127,10 @@ Custom SRDataset wraps ImageFolder and returns aligned LR/HR pairs<br>
 
 **8) User‑Adjustable Parameters**
 
-            Parameter	       | Purpose	                  | Default (example)
-            epochs_pretrain	  | G warm‑up with MSE	      | 5
-            epochs_finetune	  | Full GAN fine‑tune	      | 3
-            batch_size	       | Memory/grad smoothness	| 6
+            Parameter	      | Purpose	                  | Default (example)
+            epochs_pretrain	| G warm‑up with MSE	      | 5
+            epochs_finetune	| Full GAN fine‑tune	      | 3
+            batch_size	      | Memory/grad smoothness	| 6
             res_blocks	      | Generator capacity	      | 16
             lr	            | Optimizer step	            | 1e−4
             scale	            | Upscaling factor	      | 4
