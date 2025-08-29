@@ -53,8 +53,7 @@ Torchvision, opencv‑python, scikit‑image, Pillow, numpy, tqdm, matplotlib<br
 
 **4.2 Training**
     Phase A — Pretraining (MSE only, generator).
-    Phase B — Fine‑tuning (GAN + perceptual + TV + pixel).
-    SRCNN baseline.<br>
+    Phase B — Fine‑tuning (GAN + perceptual + TV + pixel).<br>
 
 
 ---
