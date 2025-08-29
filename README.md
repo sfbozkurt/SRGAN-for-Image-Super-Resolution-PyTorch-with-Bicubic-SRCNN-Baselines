@@ -9,7 +9,7 @@ Implemented: SRGAN Generator/Discriminator from scratch in PyTorch
 
 Baselines: Bicubic (OpenCV), SRCNN (adapted from open‐source code) ( https://github.com/AhmedIbrahimai/Super-Resolution-image-using-CNN-in-PyTorch )
 
-Datasets: DIV2K (train/eval); optional: BSDS500 for qualitative checks
+Datasets: DIV2K (train/eval)
 
 Metrics: PSNR, SSIM (skimage); perceptual comparison (visuals)<br>
 
@@ -57,8 +57,6 @@ Torchvision, opencv‑python, scikit‑image, Pillow, numpy, tqdm, matplotlib<br
     SRCNN baseline.<br>
 
 
-**4.3 Evaluation & Inference**
-
 ---
 
 **5) Architecture**
@@ -76,12 +74,12 @@ Upsampling: two stages of k3n256s1 conv + PixelShuffle×2 + PReLU (→ 64 ch)
 Output: k9n3s1 conv → Tanh (RGB in [−1,1])<br>
 
 
-**5.2 Residual Block (why it helps)**
+**5.2 Residual Block**
 
 Learns residuals (high‑freq detail) w.r.t. its input via a skip connection, enabling deeper networks without vanishing gradients and focusing capacity on fine textures.<br>
 
 
-**5.3 Discriminator (patch‑based CNN)**
+**5.3 Discriminator**
 
 Eight conv layers with alternating stride‑2 downsampling (e.g., k3n64s1, k3n64s2, k3n128s1, k3n128s2, …), then 2 FC layers → sigmoid (real/fake). Trained adversarially to push the generator toward realistic texture synthesis.<br>
 
@@ -93,13 +91,13 @@ Conv → BN → LeakyReLU, the basic downsampling unit that grows channels while
 
 **5.5 Losses**
 
-Pixel loss: L2 (MSE)
+Pixel loss
 
-Perceptual loss: VGG19 feature‑space L2
+Perceptual loss
 
-Adversarial loss: GAN/BCE on D(G(x))
+Adversarial loss
 
-Total Variation (TV): smoothness / anti‑checkerboard prior
+Total Variation (TV)
 
 Default weights used in this project: w_tv = 1e−6, w_vgg = 6e−3, w_adv = 1e−3.<br>
 
@@ -197,11 +195,9 @@ Output of SRCNN model (epoch=3):
 
 ---
 
-**10) Limitations & Future Work**
+**10) Conclusion**
 
-SRGAN trades higher distortion metrics (PSNR/SSIM) for better perceptual quality
-Training can be unstable; requires careful balancing of loss weights and epochs
-Future: lightweight generators (ESRGAN‑lite), better perceptual losses, and anti‑artifact regularizers<br>
+SRGAN delivers sharper, more realistic ×4 super-resolution than bicubic and an improved SRCNN. In our tests it gained \~4 dB PSNR and +0.023 SSIM over SRCNN, but training was \~10× slower and required careful tuning. Use SRGAN when perceptual quality matters; choose simpler models when compute is limited.<br>
 
 ---
 
