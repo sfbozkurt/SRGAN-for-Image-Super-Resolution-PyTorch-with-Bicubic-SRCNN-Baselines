@@ -11,7 +11,7 @@ Baselines: Bicubic (OpenCV), SRCNN (adapted from open‐source code) ( https://g
 
 Datasets: DIV2K (train/eval); optional: BSDS500 for qualitative checks
 
-Metrics: PSNR, SSIM (skimage); perceptual comparison (visuals)
+Metrics: PSNR, SSIM (skimage); perceptual comparison (visuals)<br>
 
 ---
 
@@ -40,7 +40,7 @@ Python: 3.9+
 
 PyTorch: 2.0+ (with CUDA if available)
 
-Torchvision, opencv‑python, scikit‑image, Pillow, numpy, tqdm, matplotlib
+Torchvision, opencv‑python, scikit‑image, Pillow, numpy, tqdm, matplotlib<br>
 
 ---
 
@@ -48,13 +48,13 @@ Torchvision, opencv‑python, scikit‑image, Pillow, numpy, tqdm, matplotlib
 
 
 **4.1 Data prep**
-    Place DIV2K under ./archive2. By default we use HR 128×128 crops and generate LR 32×32 pairs on‑the‑fly; values are mapped from [0,1] → [−1,1] to match Tanh.
+    Place DIV2K under ./archive2. By default we use HR 128×128 crops and generate LR 32×32 pairs on‑the‑fly; values are mapped from [0,1] → [−1,1] to match Tanh.<br>
 
 
 **4.2 Training**
     Phase A — Pretraining (MSE only, generator).
     Phase B — Fine‑tuning (GAN + perceptual + TV + pixel).
-    SRCNN baseline.
+    SRCNN baseline.<br>
 
 
 **4.3 Evaluation & Inference**
@@ -73,23 +73,22 @@ Tail: k3n64s1 conv → long skip from head features
 
 Upsampling: two stages of k3n256s1 conv + PixelShuffle×2 + PReLU (→ 64 ch)
 
-Output: k9n3s1 conv → Tanh (RGB in [−1,1])
+Output: k9n3s1 conv → Tanh (RGB in [−1,1])<br>
 
 
 **5.2 Residual Block (why it helps)**
 
-Learns residuals (high‑freq detail) w.r.t. its input via a skip connection, enabling deeper networks without vanishing gradients and focusing capacity on fine textures.
+Learns residuals (high‑freq detail) w.r.t. its input via a skip connection, enabling deeper networks without vanishing gradients and focusing capacity on fine textures.<br>
 
 
 **5.3 Discriminator (patch‑based CNN)**
 
-Eight conv layers with alternating stride‑2 downsampling (e.g., k3n64s1, k3n64s2, k3n128s1, k3n128s2, …), then 2 FC layers → sigmoid (real/fake). Trained adversarially to push the generator toward realistic texture synthesis.
+Eight conv layers with alternating stride‑2 downsampling (e.g., k3n64s1, k3n64s2, k3n128s1, k3n128s2, …), then 2 FC layers → sigmoid (real/fake). Trained adversarially to push the generator toward realistic texture synthesis.<br>
 
 
 **5.4 disc_block helper**
 
-Conv → BN → LeakyReLU, the basic downsampling unit that grows channels while halving spatial dims.
-
+Conv → BN → LeakyReLU, the basic downsampling unit that grows channels while halving spatial dims.<br>
 
 
 **5.5 Losses**
@@ -102,7 +101,7 @@ Adversarial loss: GAN/BCE on D(G(x))
 
 Total Variation (TV): smoothness / anti‑checkerboard prior
 
-Default weights used in this project: w_tv = 1e−6, w_vgg = 6e−3, w_adv = 1e−3.
+Default weights used in this project: w_tv = 1e−6, w_vgg = 6e−3, w_adv = 1e−3.<br>
 
 ---
 
@@ -110,12 +109,12 @@ Default weights used in this project: w_tv = 1e−6, w_vgg = 6e−3, w_adv = 1e�
 
 **6.1 Phase A — Pretraining**
 
-Train only the generator on MSE to learn stable upscaling (good but smooth results). Save checkpoints every epoch.
+Train only the generator on MSE to learn stable upscaling (good but smooth results). Save checkpoints every epoch.<br>
 
 
 **6.2 Phase B — Fine‑tuning**
 
-Alternate D and G updates: update D on real HR and generated HR; update G on a weighted sum of pixel + perceptual + adversarial + TV losses. Over epochs, G learns sharper textures while staying close to ground truth.
+Alternate D and G updates: update D on real HR and generated HR; update G on a weighted sum of pixel + perceptual + adversarial + TV losses. Over epochs, G learns sharper textures while staying close to ground truth.<br>
 
 ---
 
@@ -125,7 +124,7 @@ HR crops resized to 128×128, LR to 32×32 (for ×4)
 
 Map tensors [0,1] → [−1,1]
 
-Custom SRDataset wraps ImageFolder and returns aligned LR/HR pairs
+Custom SRDataset wraps ImageFolder and returns aligned LR/HR pairs<br>
 
 ---
 
@@ -148,34 +147,34 @@ w_tv	TV weight	1e−7–1e−5	1e−6
 **9.1 Qualitative — Example Outputs (×4)**
 
 In the four example outputs below, you can see how parameter choices directly shape the results:
-- Example 1: The super-resolved image has an unnatural green cast compared to both the input and the ground truth. This color shift usually happens when the adversarial or perceptual loss weight is set too high, pulling the generator away from accurate color reproduction.
+- Example 1: The super-resolved image has an unnatural green cast compared to both the input and the ground truth. This color shift usually happens when the adversarial or perceptual loss weight is set too high, pulling the generator away from accurate color reproduction.<br>
       
-- Example 2: Here the output looks blurry, and we can spot ringing artifacts around edges. That typically means the number of training epochs wasn’t well matched, either too few epochs for the generator to learn fine details, or too many, causing overfitting and oscillations.
+- Example 2: Here the output looks blurry, and we can spot ringing artifacts around edges. That typically means the number of training epochs wasn’t well matched, either too few epochs for the generator to learn fine details, or too many, causing overfitting and oscillations.<br>
       
-- Example 3: This image is overly sharp in places, with tiny bright spots and color oversaturation. In practice, such “too-sharp” artifacts arise when the adversarial loss is weighted too strongly, encouraging the network to hallucinate textures beyond what’s realistic.
+- Example 3: This image is overly sharp in places, with tiny bright spots and color oversaturation. In practice, such “too-sharp” artifacts arise when the adversarial loss is weighted too strongly, encouraging the network to hallucinate textures beyond what’s realistic.<br>
       
 - Example 4: Finally, we have a well-balanced result with sharp edges, natural colors,and no visible artifacts. This shows how the right combination of learning rate, loss weights, and epoch count can produce the most realistic output.
-These examples underscore that there’s no one size that fits all setting. Different images have different characteristics, so it’s important to understand our data and adjust hyperparametersaccordingly.
+These examples underscore that there’s no one size that fits all setting. Different images have different characteristics, so it’s important to understand our data and adjust hyperparametersaccordingly.<br>
 
 
 Example 1:
 
-<img width="475" height="299" alt="srgan" src="https://github.com/user-attachments/assets/dee2b24d-2ad1-4540-881d-30eaa8f4e9c0" />
+<img width="475" height="299" alt="srgan" src="https://github.com/user-attachments/assets/dee2b24d-2ad1-4540-881d-30eaa8f4e9c0" /><br>
 
 
 Example 2:
 
-<img width="473" height="293" alt="srgan2" src="https://github.com/user-attachments/assets/2eb55478-11a9-4e7f-b84c-e95507bfeaf7" />
+<img width="473" height="293" alt="srgan2" src="https://github.com/user-attachments/assets/2eb55478-11a9-4e7f-b84c-e95507bfeaf7" /><br>
 
 
 Example 3:
 
-<img width="507" height="309" alt="srgan3" src="https://github.com/user-attachments/assets/a3338944-8753-4ce2-a636-63ef853a1061" />
+<img width="507" height="309" alt="srgan3" src="https://github.com/user-attachments/assets/a3338944-8753-4ce2-a636-63ef853a1061" /><br>
 
 
 Example 4:
 
-<img width="480" height="298" alt="srgan4" src="https://github.com/user-attachments/assets/200399e7-dad1-4111-9976-8e5cd22dda91" />
+<img width="480" height="298" alt="srgan4" src="https://github.com/user-attachments/assets/200399e7-dad1-4111-9976-8e5cd22dda91" /><br>
 
 
 
@@ -189,12 +188,12 @@ Example 4:
 
 Output of SRGAN model (Pretraining epoch = 5, Fine-tuning epoch = 3):
 
-<img width="481" height="376" alt="srgan5" src="https://github.com/user-attachments/assets/5a853d8e-7f1a-4b81-b409-8b0ceb3a54fc" />
+<img width="481" height="376" alt="srgan5" src="https://github.com/user-attachments/assets/5a853d8e-7f1a-4b81-b409-8b0ceb3a54fc" /><br>
 
 
 Output of SRCNN model (epoch=3):
 
-<img width="491" height="349" alt="srcnn" src="https://github.com/user-attachments/assets/c599f29f-ff46-4a0d-b2ec-0425ab1a8699" />
+<img width="491" height="349" alt="srcnn" src="https://github.com/user-attachments/assets/c599f29f-ff46-4a0d-b2ec-0425ab1a8699" /><br>
 
 ---
 
@@ -202,7 +201,7 @@ Output of SRCNN model (epoch=3):
 
 SRGAN trades higher distortion metrics (PSNR/SSIM) for better perceptual quality
 Training can be unstable; requires careful balancing of loss weights and epochs
-Future: lightweight generators (ESRGAN‑lite), better perceptual losses, and anti‑artifact regularizers
+Future: lightweight generators (ESRGAN‑lite), better perceptual losses, and anti‑artifact regularizers<br>
 
 ---
 
